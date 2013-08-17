@@ -1,0 +1,4 @@
+CompInvest
+==========
+
+Computational investment scripts
