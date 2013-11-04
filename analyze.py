@@ -116,10 +116,6 @@ def main():
     values_file = sys.argv[1]
     symbol = sys.argv[2]
 
-    # Start and End date of the charts
-    startdate = dt.datetime(2011, 1, 1)
-    enddate = dt.datetime(2011, 1, 31)
-
     fund_df, start_date, end_date = read_values(values_file)
     market_df = read_reference(start_date, end_date, [symbol])
     

@@ -90,33 +90,35 @@ def calculate_portfolio(cash, orders, prices):
  	while (order_n < len(orders.index)) and (orders['date'][order_n]==current_day):            
 	    symbol = orders['symbol'][order_n]
 	    # increment cash when selling
-	    sign = -1 if orders['symbol'][order_n]=='Sell' else 1
-            amount = orders['amount'][order_n]
+		
+	    sign = -1 if orders['type'][order_n]=='Sell' else 1
+	    amount = orders['amount'][order_n]
 	    amounts[symbol][current_day] = sign*amount
 	    order_n += 1	   
     print "amounts" 
     print amounts
-    cum_amounts = amounts.copy()
+    cum_amounts = amounts.copy()*0
 
     cash_n = pd.Series(cash, amounts.index)
     portfolio = pd.Series(cash, amounts.index)
     for ind in range(0, len(amounts.index)-1): 
         total = sum(prices.iloc[ind]*amounts.iloc[ind])
 	# don't allow cash to be negative, stop buying and recover cash
-	new_cash = cash_n[ind] - sign*total
-        print (new_cash, -sign*total)
-
+	new_cash = cash_n[ind] - total
+        
 	if new_cash > 0 : 
 	    cash_n[ind+1] = new_cash
-	    cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind+1]
+	    cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind]
 	    
 	else:
             amounts.iloc[ind][amounts.iloc[ind]>0] = 0        
 	    total = sum(prices.iloc[ind]*amounts.iloc[ind])
-	    cash_n[ind+1] = cash_n[ind] - sign*total        
+	    cash_n[ind+1] = cash_n[ind] - total        
 	    
-	cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind+1]    
+	cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind]    
         portfolio[ind+1] = sum(prices.iloc[ind+1]*cum_amounts.iloc[ind+1]) + cash_n[ind+1]
+	#print (cash_n[ind+1], -total)
+
 
     return portfolio, cash_n
 

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 '''
 (c) 2011, 2012 Georgia Tech Research Corporation
 Modified from Event profiler Tutorial 
@@ -91,9 +93,9 @@ if __name__ == '__main__':
 
     orders_file = sys.argv[1]
 # start computing N_PERIODS earlier ?
-    dt_start = dt.datetime(2011, 1, 1)
+    dt_start = dt.datetime(2012, 1, 1)
     dt_start_real = dt_start - dt.timedelta(days=N_PERIODS*2)
-    dt_end = dt.datetime(2011, 12, 31)
+    dt_end = dt.datetime(2012, 6, 30)
     ldt_timestamps = du.getNYSEdays(dt_start_real, dt_end, dt.timedelta(hours=16))
 
     dataobj = da.DataAccess('Yahoo')
