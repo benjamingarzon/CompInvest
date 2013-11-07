@@ -67,7 +67,8 @@ def find_events(ls_symbols, d_data, start_date, end_date):
 	    
     for s_sym in ls_symbols:
         print "Calculating values for %s"%(s_sym)
-	last_order = 2	  
+	last_order = 2
+	cum_diff = 0	  
         for i in range(1, len(ldt_timestamps)):
 
             # Calculating the returns for this timestamp
@@ -79,13 +80,20 @@ def find_events(ls_symbols, d_data, start_date, end_date):
             # 1 = 'Buy' event if symbol crosses lower bollinger 
             # 2 = 'Sell' event if symbol crosses upper bollinger 
 	    # only possible to sell we bought before and viceversa
-            if f_symbollinger_today <= -2 and f_symbollinger_yest > -2 and last_order == 2:
+            if f_symbollinger_today <= -2 and f_symbollinger_yest > -2 and last_order == 2 and f_symprice_today > 5:
                 df_events[s_sym].ix[ldt_timestamps[i]] = 1
   		last_order = 1
+		last_price = f_symprice_today
+		print s_sym, ldt_timestamps[i], f_symprice_today, 'Buy'
             # sell if you are holding equity
             if f_symbollinger_today >= 2 and f_symbollinger_yest < 2 and last_order == 1:
+		price_diff = f_symprice_today-last_price
                 df_events[s_sym].ix[ldt_timestamps[i]] = 2
 		last_order = 2
+		print s_sym, ldt_timestamps[i], f_symprice_today, 'Sell', price_diff  
+		cum_diff += price_diff
+
+	print "Accumulated difference ", cum_diff
 
     return df_events
 
@@ -93,7 +101,7 @@ if __name__ == '__main__':
 
     orders_file = sys.argv[1]
 # start computing N_PERIODS earlier ?
-    dt_start = dt.datetime(2012, 1, 1)
+    dt_start = dt.datetime(2011, 1, 1)
     dt_start_real = dt_start - dt.timedelta(days=N_PERIODS*2)
     dt_end = dt.datetime(2012, 6, 30)
     ldt_timestamps = du.getNYSEdays(dt_start_real, dt_end, dt.timedelta(hours=16))

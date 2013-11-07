@@ -38,11 +38,9 @@ def read_values(values_file):
 
     values_df = pd.DataFrame(values, columns = ('date','value'), dtype=np.dtype('f8'))
     nrows = len(values_df.index)
-
-    start_date = values_df['date'][0]
-    end_date = values_df['date'][nrows - 1] + dt.timedelta(days = 1)
-
-    return(values_df, start_date, end_date)
+    
+    dates = [d for d in values_df['date']]
+    return(values_df, dates)
 
 def read_reference(start_date, end_date, ls_symbol):
     ''' Read the reference symbol values and save them as a series'''
@@ -72,8 +70,10 @@ def read_reference(start_date, end_date, ls_symbol):
 
     # Getting the numpy ndarray of close prices.
     na_price = d_data['close'].values
-    na_price_df = pd.DataFrame(na_price, columns = ls_symbol, index = d_data['close'].index) 
-    return(na_price_df)
+    dates = d_data['close'].index
+    na_price_df = pd.DataFrame(na_price, columns = ls_symbol, index = dates) 
+    
+    return(na_price_df, ldt_timestamps)
 
 
 def compute_stats(na_price):
@@ -95,7 +95,6 @@ def compute_stats(na_price):
     
     # Calculate std and mean of returns
     na_std = np.std(na_rets)
-
     na_mean = np.mean(na_rets)
 
     # Calculate Sharpe ratio
@@ -116,8 +115,12 @@ def main():
     values_file = sys.argv[1]
     symbol = sys.argv[2]
 
-    fund_df, start_date, end_date = read_values(values_file)
-    market_df = read_reference(start_date, end_date, [symbol])
+    fund_df, fund_dates = read_values(values_file)
+    
+    start_date = fund_dates[0]
+    end_date = fund_dates[-1]
+
+    market_df, market_dates = read_reference(start_date, end_date, [symbol])
     
     fund_values = fund_df['value'].values
     market_values = market_df[symbol].values
@@ -138,12 +141,13 @@ def main():
     print "Average Daily Return of Market %f"%(market_mean)
 
     plt.clf()
-    plt.plot(range(0, len(fund_df.index)), fund_cum, label="ValueF")
-    plt.plot(range(0, len(market_df.index)), market_cum,label="Value")
+    plt.plot(fund_dates, fund_cum, label="ValueF")
+    plt.plot(market_dates, market_cum,label="Value")
     plt.legend(['Fund', 'Market'])
     plt.ylabel('Values')
-    #plt.xticks(rotation=70)
-
+    plt.xticks(rotation=70)
+    plt.tick_params(axis='both', which='major', labelsize=8)
+    plt.tick_params(axis='both', which='minor', labelsize=6)
     plt.savefig("analysis.png", format='png')
 
 if __name__ == '__main__':

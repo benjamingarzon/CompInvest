@@ -103,13 +103,15 @@ def calculate_portfolio(cash, orders, prices):
     portfolio = pd.Series(cash, amounts.index)
     for ind in range(0, len(amounts.index)-1): 
         total = sum(prices.iloc[ind]*amounts.iloc[ind])
+
+	# sell only if we have shares
+       	amounts.iloc[ind][ (cum_amounts.iloc[ind] + amounts.iloc[ind]) < 0 ] = 0
+
 	# don't allow cash to be negative, stop buying and recover cash
 	new_cash = cash_n[ind] - total
         
-	if new_cash > 0 : 
+        if new_cash > 0: 
 	    cash_n[ind+1] = new_cash
-	    cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind]
-	    
 	else:
             amounts.iloc[ind][amounts.iloc[ind]>0] = 0        
 	    total = sum(prices.iloc[ind]*amounts.iloc[ind])
@@ -117,7 +119,7 @@ def calculate_portfolio(cash, orders, prices):
 	    
 	cum_amounts.iloc[ind+1] = cum_amounts.iloc[ind] + amounts.iloc[ind]    
         portfolio[ind+1] = sum(prices.iloc[ind+1]*cum_amounts.iloc[ind+1]) + cash_n[ind+1]
-	#print (cash_n[ind+1], -total)
+	print (cash_n[ind+1], -total)
 
 
     return portfolio, cash_n
